@@ -3,50 +3,39 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 import { NextResponse } from "next/server";
-import { CLIENT_ID, INSIGHT_BASE, BASE_CHAIN_ID } from "../../../consts/env";
 
-const COLLECTION = process.env.NEXT_PUBLIC_NFT_COLLECTION_ADDRESS!;
-const ALLOWED_LIMITS = new Set([25, 50, 100, 250]);
+const CHAIN_ID = 8453;
+const CONTRACT = process.env.NEXT_PUBLIC_NFT_COLLECTION_ADDRESS!;
+const BASE = process.env.NEXT_PUBLIC_INSIGHT_BASE_URL || "https://insight.thirdweb.com";
+const CLIENT_ID = process.env.NEXT_PUBLIC_CLIENT_ID!;
 
-export async function GET(request: Request) {
-  const headers = { "x-client-id": CLIENT_ID };
-  
-  if (!headers["x-client-id"]) {
-    return NextResponse.json({ items: [], page: 0, limit: 50, total: 0 }, { status: 500 });
+export async function GET(req: Request) {
+  const { searchParams } = new URL(req.url);
+  const limit = Math.min(Number(searchParams.get("limit") ?? 25), 1000);
+  const page = Math.max(Number(searchParams.get("page") ?? 0), 0);
+
+  const url = `${BASE}/v1/nfts/${CONTRACT}?chain_id=${CHAIN_ID}&limit=${limit}&page=${page}&include_owners=false&resolve_metadata_links=true`;
+
+  const res = await fetch(url, { headers: { "x-client-id": CLIENT_ID }, cache: "no-store" });
+  if (!res.ok) {
+    const text = await res.text();
+    return NextResponse.json({ items: [], page, limit, total: 0, error: text }, { status: 200 });
   }
 
-  const { searchParams } = new URL(request.url);
-  const page = Math.max(0, parseInt(searchParams.get("page") || "0"));
-  const requestedLimit = parseInt(searchParams.get("limit") || "50");
-  const limit = ALLOWED_LIMITS.has(requestedLimit) ? requestedLimit : 50;
+  const j = await res.json();
+  const data = Array.isArray(j?.data) ? j.data : [];
 
-  try {
-    const url = `${INSIGHT_BASE}/v1/nfts/${COLLECTION}?chain_id=${BASE_CHAIN_ID}&limit=${limit}&page=${page}&include_owners=false&resolve_metadata_links=true`;
-    
-    const response = await fetch(url, { headers });
-    
-    if (!response.ok) {
-      throw new Error(`Insight ${response.status}: ${response.statusText}`);
-    }
-    
-    const data = await response.json();
-    
-    return NextResponse.json({
-      items: data?.data ?? [],
-      page,
-      limit,
-      total: data?.total ?? 0
-    }, { 
-      headers: { 
-        "Cache-Control": "s-maxage=60, stale-while-revalidate=30" 
-      } 
-    });
-  } catch (err) {
-    console.warn("NFTs fetch failed:", err);
-    return NextResponse.json({ items: [], page, limit, total: 0 }, { 
-      headers: { 
-        "Cache-Control": "no-store" 
-      } 
-    });
-  }
+  const items = data.map((n: any) => {
+    // Prefer image_url, fallback to extra_metadata.image
+    const image = n.image_url || n?.extra_metadata?.image || n?.extra_metadata?.image_url || null;
+    return {
+      ...n,
+      image_url: image, // keep the field name the UI expects
+    };
+  });
+
+  // total is not provided directly; approximate from page+limit when needed
+  const total = (items.length < limit && page === 0) ? items.length : (page + 1) * limit;
+
+  return NextResponse.json({ items, page, limit, total }, { status: 200 });
 }

@@ -1,5 +1,5 @@
 "use client";
-import { Box, Text, Image, HStack, Badge } from "@chakra-ui/react";
+import { Box, Text, Image, HStack, VStack, Badge } from "@chakra-ui/react";
 import { ipfsToHttp } from "../utils/ipfs";
 
 type Attr = { trait_type?: string; value?: string | number };
@@ -27,7 +27,7 @@ export default function NftCard({
 }) {
   const rarity = String(findAttr(attributes, "rarity_tier") || findAttr(attributes, "tier") || "").toLowerCase();
   const rank = String(findAttr(attributes, "rank") || "");
-  const img = ipfsToHttp(imageUrl) || "/placeholder-nft.webp";
+  const img = ipfsToHttp(imageUrl) || "/media/placeholder-nft.webp";
 
   const remaining = endSec
     ? Math.max(0, endSec * 1000 - Date.now())
@@ -41,13 +41,22 @@ export default function NftCard({
 
   return (
     <Box
+      width="270px"
       borderRadius="md"
       bg="brand.secondary"
       overflow="hidden"
       _hover={{ transform: "scale(1.02)" }}
       transition="all 0.15s ease-in-out"
     >
-      <Image src={img} alt={name} width="100%" height="240px" objectFit="cover" />
+      <Image 
+        src={img} 
+        alt={name} 
+        width="100%" 
+        height="200px" 
+        objectFit="contain"
+        objectPosition="center"
+        fallbackSrc="/media/placeholder-nft.webp"
+      />
 
       <Box p="md">
         <Text fontWeight="semibold" noOfLines={1} color="text.primary">{name}</Text>
@@ -56,15 +65,16 @@ export default function NftCard({
           {rarity && <Badge variant="outline" colorScheme="purple">{rarity}</Badge>}
         </HStack>
 
-        <HStack mt="md" justify="space-between" color="text.muted" fontSize="sm">
-          <Text>Time: {remainingText}</Text>
-          <Text>{bidCount ?? 0} bids</Text>
-        </HStack>
-
-        <HStack mt="md" justify="space-between" fontSize="sm">
-          <Text color="text.muted">Token #{tokenId}</Text>
-          <Text color="text.muted">{listingId ? `Listing ${listingId}` : "Not listed"}</Text>
-        </HStack>
+        <VStack mt="md" spacing="xs" align="stretch" color="text.muted" fontSize="sm">
+          <HStack justify="space-between">
+            <Text>Time: {remainingText}</Text>
+            <Text>{bidCount ?? 0} bids</Text>
+          </HStack>
+          <HStack justify="space-between">
+            <Text>Token #{tokenId}</Text>
+            <Text>{listingId ? `Listing ${listingId}` : "Not listed"}</Text>
+          </HStack>
+        </VStack>
       </Box>
     </Box>
   );
