@@ -2,11 +2,13 @@
   "name": "marketplace-template",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "build-auction-map": "node scripts/build-auction-map.js"
   },
   "dependencies": {
     "@chakra-ui/icons": "^2.1.1",
@@ -17,6 +19,7 @@
     "@emotion/styled": "^11.11.5",
     "@tanstack/react-query": "^5.44.0",
     "blo": "^1.2.0",
+    "dotenv": "^17.2.3",
     "framer-motion": "^11.2.10",
     "next": "^15.1.0",
     "pino-pretty": "^13.1.1",

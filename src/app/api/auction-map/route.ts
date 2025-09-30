@@ -84,15 +84,55 @@ function sellerAllowed(seller?: string) {
 
 export async function GET(req: Request) {
   try {
+    const { searchParams } = new URL(req.url);
+    const format = searchParams.get("format") || "json";
+
+    // First, try to load the static auction map file
+    try {
+      const fs = await import("fs");
+      const path = await import("path");
+      const auctionMapPath = path.join(process.cwd(), "public", "data", "auction-map.json");
+      
+      if (fs.existsSync(auctionMapPath)) {
+        const staticData = JSON.parse(fs.readFileSync(auctionMapPath, "utf8"));
+        console.log(`📁 Using static auction map: ${staticData.length} entries`);
+        
+        if (format === "csv") {
+          const header = "tokenId,listingId,seller,endSec,bidCount,status";
+          const lines = staticData.map((r: any) =>
+            [r.tokenId, r.listingId, r.seller ?? "", r.endSec ?? "", r.bidCount ?? 0, r.status].join(",")
+          );
+          const csv = [header, ...lines].join("\n");
+          return new NextResponse(csv, {
+            status: 200,
+            headers: {
+              "Content-Type": "text/csv; charset=utf-8",
+              "Cache-Control": "s-maxage=300, stale-while-revalidate=60",
+            },
+          });
+        }
+
+        return NextResponse.json(
+          { 
+            updatedAt: Date.now(), 
+            count: staticData.length, 
+            items: staticData,
+            source: "static"
+          },
+          { headers: { "Cache-Control": "s-maxage=300, stale-while-revalidate=60" } }
+        );
+      }
+    } catch (staticError) {
+      console.warn("⚠️  Could not load static auction map, falling back to Insight API:", staticError);
+    }
+
+    // Fallback to Insight API if static file doesn't exist
     if (!CLIENT_ID) {
       return NextResponse.json({ error: "Missing NEXT_PUBLIC_CLIENT_ID" }, { status: 400 });
     }
     if (!MARKETPLACE) {
       return NextResponse.json({ error: "Missing NEXT_PUBLIC_MARKETPLACE_ADDRESS" }, { status: 400 });
     }
-
-    const { searchParams } = new URL(req.url);
-    const format = searchParams.get("format") || "json";
 
     // 1) Get all created auctions (paginate in case you have many)
     const createdUrl = (page = 0) =>
@@ -240,7 +280,7 @@ export async function GET(req: Request) {
     }
 
     return NextResponse.json(
-      { updatedAt: Date.now(), count: rows.length, items: rows },
+      { updatedAt: Date.now(), count: rows.length, items: rows, source: "insight" },
       { headers: { "Cache-Control": "no-store" } },
     );
   } catch (e: any) {
