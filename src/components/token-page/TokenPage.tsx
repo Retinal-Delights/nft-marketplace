@@ -33,6 +33,8 @@ import { useMarketplaceContext } from "@/hooks/useMarketplaceContext";
 import dynamic from "next/dynamic";
 import { NftDetails } from "./NftDetails";
 import RelatedListings from "./RelatedListings";
+import { getTokenTransfersById } from "@/app/utils/insight";
+import { useState, useEffect } from "react";
 
 const CancelListingButton = dynamic(() => import("./CancelListingButton"), {
   ssr: false,
@@ -57,6 +59,15 @@ export function Token(props: Props) {
   } = useMarketplaceContext();
   const { tokenId } = props;
   const account = useActiveAccount();
+
+  // Provenance state
+  const [transfers, setTransfers] = useState<Array<{
+    from_address: string; to_address: string; block_timestamp: string; transaction_hash: string;
+  }>>([]);
+  const [agg, setAgg] = useState<{ uniqueSellers: number; uniqueBuyers: number; total: number }>({
+    uniqueSellers: 0, uniqueBuyers: 0, total: 0
+  });
+  const [isLoadingTransfers, setIsLoadingTransfers] = useState(false);
 
   const { data: nft, isLoading: isLoadingNFT } = useReadContract(
     type === "ERC1155" ? getERC1155 : getERC721,
@@ -93,6 +104,39 @@ export function Token(props: Props) {
   const ownedByYou =
     nft?.owner?.toLowerCase() === account?.address.toLowerCase();
 
+  // Fetch transfer data
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        setIsLoadingTransfers(true);
+        const resp = await getTokenTransfersById(
+          nftContract.address, // you already import this in the file
+          String(tokenId),
+          { limit: 300 }         // adjust if you want more history
+        );
+        if (!mounted) return;
+        const rows = resp?.data ?? [];
+
+        // Compute aggregations client-side
+        const sellers = new Set<string>();
+        const buyers  = new Set<string>();
+        for (const r of rows) {
+          if (r.from_address) sellers.add(r.from_address.toLowerCase());
+          if (r.to_address)   buyers.add(r.to_address.toLowerCase());
+        }
+        setTransfers(rows);
+        setAgg({ uniqueSellers: sellers.size, uniqueBuyers: buyers.size, total: rows.length });
+      } catch (e) {
+        console.warn("Transfers fetch failed:", e);
+        setTransfers([]); setAgg({ uniqueSellers: 0, uniqueBuyers: 0, total: 0 });
+      } finally {
+        setIsLoadingTransfers(false);
+      }
+    })();
+    return () => { mounted = false; };
+  }, [tokenId, nftContract.address]);
+
   return (
     <Flex direction="column">
       <Box mt="24px" mx="auto">
@@ -125,9 +169,9 @@ export function Token(props: Props) {
               )}
 
               {nft?.metadata?.attributes &&
-                // @ts-ignore TODO FIx later
+                Array.isArray(nft?.metadata?.attributes) &&
                 nft?.metadata?.attributes.length > 0 && (
-                  <NftAttributes attributes={nft.metadata.attributes} />
+                  <NftAttributes attributes={nft.metadata.attributes as any} />
                 )}
 
               {nft && <NftDetails nft={nft} />}
@@ -168,6 +212,80 @@ export function Token(props: Props) {
                 </Flex>
               </>
             )}
+
+            {/* Provenance & Activity Section */}
+            <Box mt="30px" p="16px" bg="gray.800" borderRadius="md" border="1px solid" borderColor="gray.700">
+              <Heading size="lg" mb="16px" color="#fffbeb">Provenance & Activity</Heading>
+              <Flex gap="16px" mb="16px" fontSize="sm">
+                <Box>
+                  <Text color="gray.400" mb="4px">Unique Sellers</Text>
+                  <Text fontWeight="semibold" color="#fffbeb">
+                    {isLoadingTransfers ? "…" : agg.uniqueSellers}
+                  </Text>
+                </Box>
+                <Box>
+                  <Text color="gray.400" mb="4px">Unique Buyers</Text>
+                  <Text fontWeight="semibold" color="#fffbeb">
+                    {isLoadingTransfers ? "…" : agg.uniqueBuyers}
+                  </Text>
+                </Box>
+                <Box>
+                  <Text color="gray.400" mb="4px">Total Transfers</Text>
+                  <Text fontWeight="semibold" color="#fffbeb">
+                    {isLoadingTransfers ? "…" : agg.total}
+                  </Text>
+                </Box>
+              </Flex>
+
+              <Box maxH="224px" overflow="auto" borderRadius="md" border="1px solid" borderColor="gray.700">
+                <Table size="sm">
+                  <Thead bg="gray.900" position="sticky" top="0">
+                    <Tr>
+                      <Th color="gray.400" fontWeight="medium" px="12px" py="8px">When</Th>
+                      <Th color="gray.400" fontWeight="medium" px="12px" py="8px">From → To</Th>
+                      <Th color="gray.400" fontWeight="medium" px="12px" py="8px">Tx</Th>
+                    </Tr>
+                  </Thead>
+                  <Tbody>
+                    {isLoadingTransfers ? (
+                      <Tr><Td colSpan={3} px="12px" py="12px" color="gray.400">Loading transfers…</Td></Tr>
+                    ) : transfers.length === 0 ? (
+                      <Tr><Td colSpan={3} px="12px" py="12px" color="gray.400">No on-chain transfers yet.</Td></Tr>
+                    ) : (
+                      transfers.map((t, i) => {
+                        const when = new Date(Number(t.block_timestamp) * 1000).toLocaleString("en-US", {
+                          month: "2-digit", day: "2-digit", year: "numeric",
+                          hour: "numeric", minute: "2-digit", hour12: true,
+                          timeZone: "America/Los_Angeles"
+                        });
+                        return (
+                          <Tr key={t.transaction_hash + i} borderTop="1px solid" borderColor="gray.800">
+                            <Td px="12px" py="8px" color="#fffbeb">{when}</Td>
+                            <Td px="12px" py="8px">
+                              <Text color="gray.300" fontFamily="mono">
+                                {short(t.from_address)} → {short(t.to_address)}
+                              </Text>
+                            </Td>
+                            <Td px="12px" py="8px">
+                              <Link
+                                color="blue.400"
+                                _hover={{ textDecoration: "underline" }}
+                                fontFamily="mono"
+                                href={`https://basescan.org/tx/${t.transaction_hash}`}
+                                isExternal
+                              >
+                                {t.transaction_hash.slice(0, 8)}…
+                              </Link>
+                            </Td>
+                          </Tr>
+                        );
+                      })
+                    )}
+                  </Tbody>
+                </Table>
+              </Box>
+            </Box>
+
             {account &&
               nft &&
               (ownedByYou || (ownedQuantity1155 && ownedQuantity1155 > 0n)) && (
@@ -291,4 +409,9 @@ function getExpiration(endTimeInSeconds: bigint) {
   };
   const formattedDate = futureDate.toLocaleDateString("en-US", options);
   return formattedDate;
+}
+
+function short(a?: string) {
+  if (!a) return "—";
+  return a.slice(0, 6) + "…" + a.slice(-4);
 }
