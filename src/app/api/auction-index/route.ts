@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 import { NextResponse } from "next/server";
-import { insight } from "../../../utils/insight";
+import { insight } from "../../utils/insight";
 
 const EV_NEW_AUCTION = "NewAuction(address,uint256,address,tuple)";
 const EV_NEW_BID     = "NewBid(uint256,address,address,uint256,tuple)";
