@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 import { NextResponse } from "next/server";
-import { CLIENT_ID, INSIGHT_BASE, BASE_CHAIN_ID } from "../../consts/env";
+import { CLIENT_ID, INSIGHT_BASE, BASE_CHAIN_ID } from "../../../consts/env";
 
 // ==== CONFIG YOU CAN EDIT (minimal) ====
 const MARKETPLACE = process.env.NEXT_PUBLIC_MARKETPLACE_ADDRESS!; // 0xF0f2...

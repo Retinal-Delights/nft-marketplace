@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 import { NextResponse } from "next/server";
-import { CLIENT_ID, INSIGHT_BASE, BASE_CHAIN_ID } from "../../consts/env";
+import { CLIENT_ID, INSIGHT_BASE, BASE_CHAIN_ID } from "../../../consts/env";
 
 const COLLECTION = process.env.NEXT_PUBLIC_NFT_COLLECTION_ADDRESS!;
 const ALLOWED_LIMITS = new Set([25, 50, 100, 250]);
