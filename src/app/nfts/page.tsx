@@ -1,140 +1,191 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
-import { Box, Flex, Heading, Text, SimpleGrid, Select, Button, Spinner } from "@chakra-ui/react";
-import NftCard, { AuctionInfo } from "../../components/market/NftCard";
-import { toCardFields } from "../../components/market/traitHelpers";
-import { ipfsToHttp } from "../../utils/ipfs";
-import { ErrorBoundary } from "../../components/ErrorBoundary";
 
-type InsightNft = {
+import { useEffect, useMemo, useState } from "react";
+import {
+  Box, SimpleGrid, Heading, HStack, Select, Text, Spinner,
+} from "@chakra-ui/react";
+import NftCard from "../../components/NftCard";
+
+type AuctionRow = {
+  tokenId: string;
+  listingId: string;
+  bidCount: number;
+  endSec: number | null;
+  status: "active";
+};
+
+type NftItem = {
   token_id: string;
   name?: string;
   image_url?: string;
-  extra_metadata?: { attributes?: Array<{ trait_type?: string; value?: string }> };
+  extra_metadata?: {
+    attributes?: Array<{ trait_type?: string; value?: string | number }>;
+  };
 };
-type NftApiResp = { items: InsightNft[]; page: number; limit: number; total: number; error?: string };
-type AuctionIndexResp = Record<string, AuctionInfo>;
 
-const EMPTY: NftApiResp = { items: [], page: 0, limit: 50, total: 0 };
-const PAGE_SIZE_OPTIONS = [25, 50, 100, 250] as const;
+type NftsApiResp = {
+  items: NftItem[];
+  page: number;
+  limit: number;
+  total: number;
+};
 
 export default function NftsPage() {
-  const [limit, setLimit] = useState<number>(50);
-  const [page, setPage]   = useState<number>(0);
-  const [data, setData]   = useState<NftApiResp>(EMPTY);
-  const [auctions, setAuctions] = useState<AuctionIndexResp>({});
-  const [loading, setLoading] = useState(false);
+  // paging
+  const [page, setPage] = useState(0);
+  const [limit, setLimit] = useState(25); // 25 | 50 | 100 | 250 (safe with Insight)
+  const [loading, setLoading] = useState(true);
+  const [nfts, setNfts] = useState<NftsApiResp>({ items: [], page: 0, limit: 25, total: 0 });
+  const [auctions, setAuctions] = useState<Record<string, AuctionRow>>({}); // key: tokenId
 
-  const totalPages = useMemo(() => data.total && limit ? Math.max(1, Math.ceil(data.total / limit)) : 0, [data.total, limit]);
-
+  // fetch NFTs (read-only via your API route -> Insight)
   useEffect(() => {
     let alive = true;
     (async () => {
-      setLoading(true);
       try {
-        const [listRes, aucRes] = await Promise.all([
-          fetch(`/api/nfts?limit=${limit}&page=${page}`, { cache: "no-store" }),
-          fetch(`/api/auction-index`, { cache: "no-store" }),
-        ]);
-        const listJson = (await listRes.json()) as NftApiResp;
-        const aucJson  = (await aucRes.json())  as AuctionIndexResp;
+        setLoading(true);
+        const res = await fetch(`/api/nfts?limit=${limit}&page=${page}`, { cache: "no-store" });
+        const data = (await res.json()) as NftsApiResp;
         if (!alive) return;
-        
-        // Ensure we always have a valid shape
-        const safeData: NftApiResp = {
-          items: Array.isArray(listJson?.items) ? listJson.items : [],
-          page: typeof listJson?.page === 'number' ? listJson.page : page,
-          limit: typeof listJson?.limit === 'number' ? listJson.limit : limit,
-          total: typeof listJson?.total === 'number' ? listJson.total : 0,
-          error: listJson?.error
-        };
-        
-        setData(safeData);
-        setAuctions(aucJson || {});
-      } catch {
+        setNfts({
+          items: data?.items ?? [],
+          page: data?.page ?? page,
+          limit: data?.limit ?? limit,
+          total: data?.total ?? 0,
+        });
+      } catch (e) {
+        console.warn("NFTs fetch failed", e);
         if (!alive) return;
-        setData(EMPTY);
-        setAuctions({});
+        setNfts({ items: [], page: 0, limit, total: 0 });
       } finally {
         if (alive) setLoading(false);
       }
     })();
     return () => { alive = false; };
-  }, [limit, page]);
+  }, [page, limit]);
+
+  // fetch auction mapping (tokenId -> listingId, bidCount, endSec)
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const res = await fetch("/api/auction-map", { cache: "no-store" });
+        const j = await res.json();
+        const map: Record<string, AuctionRow> = {};
+        for (const r of j?.items ?? []) {
+          map[String(r.tokenId)] = {
+            tokenId: String(r.tokenId),
+            listingId: String(r.listingId),
+            bidCount: Number(r.bidCount || 0),
+            endSec: r.endSec ? Number(r.endSec) : null,
+            status: "active",
+          };
+        }
+        if (alive) setAuctions(map);
+      } catch (e) {
+        console.warn("auction-map fetch failed", e);
+        if (alive) setAuctions({});
+      }
+    })();
+    return () => { alive = false; };
+  }, []);
+
+  const totalPages = useMemo(() => {
+    const t = nfts.total ?? 0;
+    return t > 0 ? Math.ceil(t / limit) : 1;
+  }, [nfts.total, limit]);
+
+  const items = nfts.items ?? [];
 
   return (
-    <Box px="xl" py="3xl">
-      <Heading fontSize="h1" fontWeight="semibold" mb="sm" color="text.primary">
-        Live English Auctions
-      </Heading>
-
-      <Flex align="center" justify="space-between" mb="lg" gap="lg" wrap="wrap">
-        <Text color="text.muted">{data.total ? `${data.total.toLocaleString()} total NFTs` : "Loading total…"}</Text>
-        <Flex align="center" gap="sm">
-          <Select 
-            value={String(limit)} 
-            onChange={(e) => { setLimit(Number(e.target.value)); setPage(0); }} 
-            maxW="150px"
+    <Box px="xl" py="3xl" maxW="1200px" mx="auto">
+      <HStack justify="space-between" mb="xl">
+        <Heading fontSize="h1" fontWeight="semibold" color="text.primary">NFTs</Heading>
+        <HStack>
+          <Text color="text.muted" fontSize="sm">Per page</Text>
+          <Select
+            size="sm"
+            width="90px"
+            value={limit}
+            onChange={(e) => { setPage(0); setLimit(Number(e.target.value)); }}
             bg="brand.secondary"
             borderColor="gray.800"
             color="text.primary"
           >
-            {PAGE_SIZE_OPTIONS.map(n => <option key={n} value={n}>{n} per page</option>)}
+            <option value={25}>25</option>
+            <option value={50}>50</option>
+            <option value={100}>100</option>
+            <option value={250}>250</option>
           </Select>
-          <Button 
-            onClick={() => setPage(p => Math.max(0, p - 1))} 
-            isDisabled={page === 0}
-            variant="secondary"
-            size="sm"
-          >
-            Previous
-          </Button>
-          <Text color="text.secondary" fontSize="sm">
-            Page {page + 1}{totalPages ? ` of ${totalPages}` : ""}
-          </Text>
-          <Button 
-            onClick={() => setPage(p => (totalPages ? Math.min(totalPages - 1, p + 1) : p + 1))}
-            isDisabled={!!totalPages && page + 1 >= totalPages}
-            variant="secondary"
-            size="sm"
-          >
-            Next
-          </Button>
-        </Flex>
-      </Flex>
+        </HStack>
+      </HStack>
 
-      {loading && data.items.length === 0 ? (
-        <Flex align="center" justify="center" minH="40vh" direction="column" gap="md">
+      {loading ? (
+        <HStack justify="center" py="3xl">
           <Spinner color="brand.accent" />
           <Text color="text.muted">Loading NFTs…</Text>
-        </Flex>
+        </HStack>
+      ) : items.length === 0 ? (
+        <Text color="text.muted">No NFTs found.</Text>
       ) : (
-        <ErrorBoundary>
-          <SimpleGrid columns={{ base: 1, sm: 2, md: 3, lg: 4 }} spacing="lg">
-            {(data?.items ?? []).map(n => {
-              const { rarity, rank, tier } = toCardFields(n);
-              const a = auctions[n.token_id];
-              const img = ipfsToHttp(n.image_url);
-              return (
-                <NftCard
-                  key={n.token_id}
-                  tokenId={n.token_id}
-                  name={n.name || `Satoshe Slugger #${n.token_id}`}
-                  image={img}
-                  rank={rank}
-                  rarity={rarity}
-                  tier={tier}
-                  endsAt={a?.endMs ?? null}
-                  bidCount={a?.bidCount ?? 0}
-                  // onBid / onBuy will be wired to thirdweb v5 writes later:
-                  onBid={undefined}
-                  onBuy={undefined}
-                />
-              );
-            })}
-          </SimpleGrid>
-        </ErrorBoundary>
+        <SimpleGrid columns={{ base: 1, sm: 2, md: 3, lg: 4 }} spacing="lg">
+          {items.map((n) => {
+            const tokenId = String(n.token_id);
+            const auction = auctions[tokenId];
+            return (
+              <NftCard
+                key={tokenId}
+                tokenId={tokenId}
+                name={n.name || `Token #${tokenId}`}
+                imageUrl={n.image_url}
+                attributes={n.extra_metadata?.attributes || []}
+                listingId={auction?.listingId}
+                bidCount={auction?.bidCount ?? 0}
+                endSec={auction?.endSec ?? null}
+              />
+            );
+          })}
+        </SimpleGrid>
       )}
+
+      {/* simple pager */}
+      <HStack justify="space-between" mt="3xl">
+        <Text color="text.muted" fontSize="sm">
+          Page {page + 1} / {totalPages} • Total {nfts.total ?? 0}
+        </Text>
+        <HStack>
+          <button
+            disabled={page === 0}
+            onClick={() => setPage((p) => Math.max(0, p - 1))}
+            style={{
+              padding: '8px 16px',
+              backgroundColor: page === 0 ? '#2C2C2C' : '#1A1A1A',
+              color: page === 0 ? '#6E6E6E' : '#FFFFFF',
+              border: '1px solid #2C2C2C',
+              borderRadius: '2px',
+              cursor: page === 0 ? 'not-allowed' : 'pointer',
+              fontSize: '14px'
+            }}
+          >
+            ‹ Prev
+          </button>
+          <button
+            disabled={page + 1 >= totalPages}
+            onClick={() => setPage((p) => p + 1)}
+            style={{
+              padding: '8px 16px',
+              backgroundColor: page + 1 >= totalPages ? '#2C2C2C' : '#1A1A1A',
+              color: page + 1 >= totalPages ? '#6E6E6E' : '#FFFFFF',
+              border: '1px solid #2C2C2C',
+              borderRadius: '2px',
+              cursor: page + 1 >= totalPages ? 'not-allowed' : 'pointer',
+              fontSize: '14px'
+            }}
+          >
+            Next ›
+          </button>
+        </HStack>
+      </HStack>
     </Box>
   );
 }
