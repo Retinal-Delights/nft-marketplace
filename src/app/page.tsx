@@ -122,12 +122,14 @@ export default function Home() {
   const pageOptions = [25, 50, 100, 250];
 
   return (
-    <Box px={4} py={6}>
-      <VStack spacing={4} align="stretch">
+    <Box px="xl" py="3xl">
+      <VStack spacing="xl" align="stretch">
         <Flex justify="space-between" align="center">
-          <Heading>Live English Auctions</Heading>
-          <HStack spacing={4}>
-            <Text fontSize="sm" color="gray.500">
+          <Heading fontSize="h1" fontWeight="semibold" color="text.primary">
+            Live English Auctions
+          </Heading>
+          <HStack spacing="lg">
+            <Text fontSize="sm" color="text.muted">
               {totalNfts} total NFTs
             </Text>
             <Select
@@ -137,6 +139,9 @@ export default function Home() {
                 setCurrentPage(0); // Reset to first page when changing page size
               }}
               width="120px"
+              bg="brand.secondary"
+              borderColor="gray.800"
+              color="text.primary"
             >
               {pageOptions.map(size => (
                 <option key={size} value={size}>{size} per page</option>
@@ -146,39 +151,44 @@ export default function Home() {
         </Flex>
 
         {isLoading ? (
-          <Text>Loading NFTs...</Text>
+          <Text color="text.secondary" textAlign="center" py="3xl">
+            Loading NFTs...
+          </Text>
         ) : (
           <>
-            <Flex wrap="wrap" gap={4}>
+            <Flex wrap="wrap" gap="lg">
         {items.map((it) => (
-          <Card key={it.tokenId} w="320px" bg="#111" color="#eee" border="1px solid #222">
+          <Card key={it.tokenId} w="320px" bg="brand.secondary" color="text.primary" border="1px solid" borderColor="gray.800">
             <CardBody>
-              <Box mb={3} borderRadius="lg" overflow="hidden" bg="#000">
-                {it.img ? <CImage src={it.img} alt={it.name} width="100%" height="auto" /> : <Box h="320px" bg="#222" />}
+              <Box mb="md" borderRadius="md" overflow="hidden" bg="brand.primary">
+                {it.img ? <CImage src={it.img} alt={it.name} width="100%" height="auto" /> : <Box h="320px" bg="gray.800" />}
               </Box>
 
-              <Text fontWeight="bold" fontSize="lg">{it.name}</Text>
-              <Text fontSize="sm" opacity={0.8}>Ends: {it.remaining}</Text>
+              <Text fontWeight="semibold" fontSize="lg" color="text.primary">{it.name}</Text>
+              <Text fontSize="sm" color="text.secondary">Ends: {it.remaining}</Text>
 
-              <Box mt={2} fontSize="sm" opacity={0.9}>
+              <Box mt="sm" fontSize="sm" color="text.secondary">
                 <Text>Rank: {it.rank ?? "—"}</Text>
                 <Text>Rarity: {it.rarity ?? "—"}</Text>
                 <Text>Tier: {it.tier ?? "—"}</Text>
                 <Text>Bids: {it.bidCount}</Text>
               </Box>
 
-              <Flex mt={3} gap={2} align="center">
+              <Flex mt="md" gap="sm" align="center">
                 <Input
                   size="sm"
                   w="50%"
                   placeholder="0.01"
                   value={myBid[it.tokenId] ?? ""}
                   onChange={(e) => setMyBid((p) => ({ ...p, [it.tokenId]: e.target.value }))}
+                  bg="brand.secondary"
+                  borderColor="gray.800"
+                  color="text.primary"
                 />
-                <Button size="sm" variant="outline" onClick={() => handleBid(it.auctionId, myBid[it.tokenId] || "0")}>
+                <Button size="sm" variant="secondary" onClick={() => handleBid(it.auctionId, myBid[it.tokenId] || "0")}>
                   BID
                 </Button>
-                <Button size="sm" colorScheme="blue" onClick={() => handleBuyNow(it.auctionId, it.buyoutWei)}>
+                <Button size="sm" variant="primary" onClick={() => handleBuyNow(it.auctionId, it.buyoutWei)}>
                   BUY
                 </Button>
               </Flex>
@@ -188,16 +198,17 @@ export default function Home() {
             </Flex>
 
             {/* Pagination Controls */}
-            <Flex justify="center" align="center" gap={4} mt={6}>
+            <Flex justify="center" align="center" gap="lg" mt="xl">
               <Button
                 onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
                 isDisabled={currentPage === 0}
                 size="sm"
+                variant="secondary"
               >
                 Previous
               </Button>
               
-              <Text fontSize="sm">
+              <Text fontSize="sm" color="text.secondary">
                 Page {currentPage + 1} of {totalPages}
               </Text>
               
@@ -205,6 +216,7 @@ export default function Home() {
                 onClick={() => setCurrentPage(Math.min(totalPages - 1, currentPage + 1))}
                 isDisabled={currentPage >= totalPages - 1}
                 size="sm"
+                variant="secondary"
               >
                 Next
               </Button>

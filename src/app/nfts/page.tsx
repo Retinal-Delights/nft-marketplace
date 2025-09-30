@@ -63,32 +63,54 @@ export default function NftsPage() {
   }, [limit, page]);
 
   return (
-    <Box px={6} py={8}>
-      <Heading size="xl" mb={2}>Live English Auctions</Heading>
+    <Box px="xl" py="3xl">
+      <Heading fontSize="h1" fontWeight="semibold" mb="sm" color="text.primary">
+        Live English Auctions
+      </Heading>
 
-      <Flex align="center" justify="space-between" mb={5} gap={4} wrap="wrap">
-        <Text color="gray.400">{data.total ? `${data.total.toLocaleString()} total NFTs` : "Loading total…"}</Text>
-        <Flex align="center" gap={2}>
-          <Select value={String(limit)} onChange={(e) => { setLimit(Number(e.target.value)); setPage(0); }} maxW="150px">
+      <Flex align="center" justify="space-between" mb="lg" gap="lg" wrap="wrap">
+        <Text color="text.muted">{data.total ? `${data.total.toLocaleString()} total NFTs` : "Loading total…"}</Text>
+        <Flex align="center" gap="sm">
+          <Select 
+            value={String(limit)} 
+            onChange={(e) => { setLimit(Number(e.target.value)); setPage(0); }} 
+            maxW="150px"
+            bg="brand.secondary"
+            borderColor="gray.800"
+            color="text.primary"
+          >
             {PAGE_SIZE_OPTIONS.map(n => <option key={n} value={n}>{n} per page</option>)}
           </Select>
-          <Button onClick={() => setPage(p => Math.max(0, p - 1))} isDisabled={page === 0}>Previous</Button>
-          <Text>Page {page + 1}{totalPages ? ` of ${totalPages}` : ""}</Text>
-          <Button onClick={() => setPage(p => (totalPages ? Math.min(totalPages - 1, p + 1) : p + 1))}
-                  isDisabled={!!totalPages && page + 1 >= totalPages}>
+          <Button 
+            onClick={() => setPage(p => Math.max(0, p - 1))} 
+            isDisabled={page === 0}
+            variant="secondary"
+            size="sm"
+          >
+            Previous
+          </Button>
+          <Text color="text.secondary" fontSize="sm">
+            Page {page + 1}{totalPages ? ` of ${totalPages}` : ""}
+          </Text>
+          <Button 
+            onClick={() => setPage(p => (totalPages ? Math.min(totalPages - 1, p + 1) : p + 1))}
+            isDisabled={!!totalPages && page + 1 >= totalPages}
+            variant="secondary"
+            size="sm"
+          >
             Next
           </Button>
         </Flex>
       </Flex>
 
       {loading && data.items.length === 0 ? (
-        <Flex align="center" justify="center" minH="40vh" direction="column" gap={3}>
-          <Spinner />
-          <Text color="gray.400">Loading NFTs…</Text>
+        <Flex align="center" justify="center" minH="40vh" direction="column" gap="md">
+          <Spinner color="brand.accent" />
+          <Text color="text.muted">Loading NFTs…</Text>
         </Flex>
       ) : (
         <ErrorBoundary>
-          <SimpleGrid columns={{ base: 1, sm: 2, md: 3, lg: 4 }} spacing={4}>
+          <SimpleGrid columns={{ base: 1, sm: 2, md: 3, lg: 4 }} spacing="lg">
             {(data?.items ?? []).map(n => {
               const { rarity, rank, tier } = toCardFields(n);
               const a = auctions[n.token_id];

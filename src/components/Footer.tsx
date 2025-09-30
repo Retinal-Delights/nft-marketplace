@@ -5,7 +5,7 @@ import { FaHeart } from "react-icons/fa";
 
 export default function Footer() {
   return (
-    <Box as="footer" bg="gray.900" color="gray.300" py={6} px={4}>
+    <Box as="footer" bg="brand.primary" color="text.muted" py="xl" px="lg">
       <Flex
         direction={{ base: "column", md: "row" }}
         align="center"
@@ -16,45 +16,45 @@ export default function Footer() {
         {/* Left side: Legal links */}
         <Flex
           wrap="wrap"
-          gap={4}
+          gap="lg"
           justify={{ base: "center", md: "flex-start" }}
-          mb={{ base: 4, md: 0 }}
+          mb={{ base: "lg", md: 0 }}
         >
-          <Link href="https://retinaldelights.io/terms" isExternal>
+          <Link href="https://retinaldelights.io/terms" isExternal color="text.muted" fontSize="sm" _hover={{ color: "brand.highlight" }}>
             TERMS OF SERVICE
           </Link>
-          <Link href="https://retinaldelights.io/privacy" isExternal>
+          <Link href="https://retinaldelights.io/privacy" isExternal color="text.muted" fontSize="sm" _hover={{ color: "brand.highlight" }}>
             PRIVACY POLICY
           </Link>
-          <Link href="https://retinaldelights.io/cookies" isExternal>
+          <Link href="https://retinaldelights.io/cookies" isExternal color="text.muted" fontSize="sm" _hover={{ color: "brand.highlight" }}>
             COOKIES POLICY
           </Link>
-          <Link href="https://retinaldelights.io/nft-license-agreement" isExternal>
+          <Link href="https://retinaldelights.io/nft-license-agreement" isExternal color="text.muted" fontSize="sm" _hover={{ color: "brand.highlight" }}>
             NFT LICENSE AGREEMENT
           </Link>
-          <Link href="https://retinaldelights.io/nft-listing-policy" isExternal>
+          <Link href="https://retinaldelights.io/nft-listing-policy" isExternal color="text.muted" fontSize="sm" _hover={{ color: "brand.highlight" }}>
             NFT LISTING
           </Link>
-          <Link href="https://retinaldelights.io/acceptable-use-policy" isExternal>
+          <Link href="https://retinaldelights.io/acceptable-use-policy" isExternal color="text.muted" fontSize="sm" _hover={{ color: "brand.highlight" }}>
             ACCEPTABLE USE POLICY
           </Link>
-          <Link href="https://retinaldelights.io/disclaimer" isExternal>
+          <Link href="https://retinaldelights.io/disclaimer" isExternal color="text.muted" fontSize="sm" _hover={{ color: "brand.highlight" }}>
             DISCLAIMER
           </Link>
         </Flex>
 
         {/* Right side: Credits */}
         <Flex direction="column" align={{ base: "center", md: "flex-end" }}>
-          <Text>
+          <Text fontSize="sm" color="text.muted">
             Created with{" "}
-            <Icon as={FaHeart} color="pink.400" mx={1} /> in Los Angeles by{" "}
-            <Link href="https://kristenwoerdeman.com" isExternal color="pink.400">
+            <Icon as={FaHeart} color="brand.accent" mx="xs" /> in Los Angeles by{" "}
+            <Link href="https://kristenwoerdeman.com" isExternal color="brand.highlight" _hover={{ textDecoration: "underline" }}>
               kwoerd
             </Link>
           </Text>
-          <Text fontSize="sm">
+          <Text fontSize="sm" color="text.muted">
             2025 ©{" "}
-            <Link href="https://retinaldelights.io" isExternal color="pink.400">
+            <Link href="https://retinaldelights.io" isExternal color="brand.highlight" _hover={{ textDecoration: "underline" }}>
               Retinal Delights, Inc.
             </Link>{" "}
             All Rights Reserved
