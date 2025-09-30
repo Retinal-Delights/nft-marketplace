@@ -8,6 +8,7 @@ import { insight } from "../../utils/insight";
 const EV_NEW_AUCTION = "NewAuction(address,uint256,address,tuple)";
 const EV_NEW_BID     = "NewBid(uint256,address,address,uint256,tuple)";
 const MARKET = process.env.NEXT_PUBLIC_MARKETPLACE_ADDRESS!;
+const MIN_LIVE_LISTING_ID = 7; // Skip listings 0-6 as they're not active
 
 let cache: { ts: number; data: Record<string, { endMs: number; bidCount: number; buyoutWei: string; auctionId: string }> } | null = null;
 const TTL = 60_000;
@@ -40,6 +41,10 @@ export async function GET() {
       const endSec    = Number(A?.endTimestamp ?? a?.endTimestamp ?? 0);
       const auctionId = String(a?.auctionId ?? A?.auctionId ?? "");
       const buyoutWei = String(A?.buyoutBidAmount ?? a?.buyoutBidAmount ?? "0");
+      
+      // Skip listings below MIN_LIVE_LISTING_ID
+      if (Number(auctionId) < MIN_LIVE_LISTING_ID) continue;
+      
       out[tokenId] = { endMs: endSec * 1000, bidCount: 0, buyoutWei, auctionId };
     }
 
