@@ -2,12 +2,11 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Box, Flex, Text, Heading, Button, Card, CardBody, Image as CImage, Input, Select, HStack, VStack } from "@chakra-ui/react";
-import { createThirdwebClient, getContract, prepareContractCall, sendTransaction } from "thirdweb";
+import { getContract, prepareContractCall, sendTransaction } from "thirdweb";
 import { base } from "thirdweb/chains";
 import { useActiveAccount } from "thirdweb/react";
 import { getOwnedNftsByWallet } from "./utils/insight";
-
-const CLIENT_ID   = process.env.NEXT_PUBLIC_CLIENT_ID!;
+import { client } from "../consts/client";
 const COLLECTION  = process.env.NEXT_PUBLIC_NFT_COLLECTION_ADDRESS!;
 const MARKETPLACE = process.env.NEXT_PUBLIC_MARKETPLACE_ADDRESS!;
 
@@ -85,7 +84,6 @@ export default function Home() {
 
   // 4) thirdweb v5 writes (SDK) — replace ABI paths with your files under src/abi/
   const handleBid = async (auctionId: string, ethAmount: string) => {
-    const client = createThirdwebClient({ clientId: CLIENT_ID });
     const market = getContract({
       client, chain: base,
       address: MARKETPLACE,
@@ -104,7 +102,6 @@ export default function Home() {
   };
 
   const handleBuyNow = async (auctionId: string, buyoutWei: string) => {
-    const client = createThirdwebClient({ clientId: CLIENT_ID });
     const market = getContract({
       client, chain: base,
       address: MARKETPLACE,

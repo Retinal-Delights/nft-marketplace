@@ -51,7 +51,7 @@ export default function NftAttributes({ attributes, labelCase = "title" }: Props
 
 /*
 
-import NftAttributes from "@/components/NftAttributes";
+import NftAttributes from "../../components/NftAttributes";
 
 // If your metadata has an array:
 <NftAttributes attributes={nft.extra_metadata?.attributes} />

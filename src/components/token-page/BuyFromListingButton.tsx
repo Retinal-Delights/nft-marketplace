@@ -1,5 +1,5 @@
-import { client } from "@/consts/client";
-import { useMarketplaceContext } from "@/hooks/useMarketplaceContext";
+import { client } from "../../consts/client";
+import { useMarketplaceContext } from "../../hooks/useMarketplaceContext";
 import { Button, useToast } from "@chakra-ui/react";
 import {
 	type Hex,

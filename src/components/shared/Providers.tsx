@@ -1,5 +1,5 @@
 "use client";
-import { chakraTheme, chakraThemeConfig } from "@/consts/chakra";
+import { chakraTheme, chakraThemeConfig } from "../../consts/chakra";
 import { ChakraProvider, ColorModeScript } from "@chakra-ui/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { ReactNode } from "react";

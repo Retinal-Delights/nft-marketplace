@@ -1,4 +1,4 @@
-import MarketplaceProvider from "@/hooks/useMarketplaceContext";
+import MarketplaceProvider from "../../../../hooks/useMarketplaceContext";
 import type { ReactNode } from "react";
 
 export default function MarketplaceLayout({

@@ -1,4 +1,4 @@
-import { useMarketplaceContext } from "@/hooks/useMarketplaceContext";
+import { useMarketplaceContext } from "../../hooks/useMarketplaceContext";
 import { Link } from "@chakra-ui/next-js";
 import {
   AccordionButton,

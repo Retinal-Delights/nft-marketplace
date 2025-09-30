@@ -15,23 +15,23 @@ import { shortenAddress } from "thirdweb/utils";
 import type { Account } from "thirdweb/wallets";
 import { ProfileMenu } from "./Menu";
 import { useState } from "react";
-import { NFT_CONTRACTS, type NftContract } from "@/consts/nft_contracts";
+import { NFT_CONTRACTS, type NftContract } from "../../consts/nft_contracts";
 import {
   MediaRenderer,
   useActiveAccount,
   useReadContract,
 } from "thirdweb/react";
 import { getContract, toEther } from "thirdweb";
-import { client } from "@/consts/client";
-import { getOwnedERC721s } from "@/extensions/getOwnedERC721s";
+import { client } from "../../consts/client";
+import { getOwnedERC721s } from "../../extensions/getOwnedERC721s";
 import { OwnedItem } from "./OwnedItem";
 import { getAllValidListings } from "thirdweb/extensions/marketplace";
-import { MARKETPLACE_CONTRACTS } from "@/consts/marketplace_contract";
+import { MARKETPLACE_CONTRACTS } from "../../consts/marketplace_contract";
 import { Link } from "@chakra-ui/next-js";
-import { getOwnedERC1155s } from "@/extensions/getOwnedERC1155s";
+import { getOwnedERC1155s } from "../../extensions/getOwnedERC1155s";
 import { ExternalLinkIcon } from "@chakra-ui/icons";
-import { useGetENSAvatar } from "@/hooks/useGetENSAvatar";
-import { useGetENSName } from "@/hooks/useGetENSName";
+import { useGetENSAvatar } from "../../hooks/useGetENSAvatar";
+import { useGetENSName } from "../../hooks/useGetENSName";
 
 type Props = {
   address: string;

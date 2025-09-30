@@ -1,4 +1,4 @@
-import { useMarketplaceContext } from "@/hooks/useMarketplaceContext";
+import { useMarketplaceContext } from "../../hooks/useMarketplaceContext";
 import { Button, useToast } from "@chakra-ui/react";
 import { sendAndConfirmTransaction } from "thirdweb";
 import { cancelListing } from "thirdweb/extensions/marketplace";

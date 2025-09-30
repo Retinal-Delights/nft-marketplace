@@ -1,5 +1,5 @@
-import { client } from "@/consts/client";
-import { useMarketplaceContext } from "@/hooks/useMarketplaceContext";
+import { client } from "../../consts/client";
+import { useMarketplaceContext } from "../../hooks/useMarketplaceContext";
 import { Link } from "@chakra-ui/next-js";
 import {
   Box,

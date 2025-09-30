@@ -1,16 +1,16 @@
 // utils/insight.ts
 
+import { CLIENT_ID, INSIGHT_BASE, BASE_CHAIN_ID } from "../../consts/env";
+
 /** Core helper: calls Insight with your client ID and chain_id=8453 (Base). */
 export async function insight<T>(
   path: string,
   params?: Record<string, string | number | boolean | (string | number)[]>
 ): Promise<T> {
-  const base = process.env.INSIGHT_BASE_URL || "https://insight.thirdweb.com";
-  const cid  = process.env.NEXT_PUBLIC_CLIENT_ID!;
-  const url  = new URL(path, base);
+  const url  = new URL(path, INSIGHT_BASE);
 
   // Always include Base (8453). You can add more later via params (repeatable).
-  url.searchParams.append("chain_id", "8453");
+  url.searchParams.append("chain_id", String(BASE_CHAIN_ID));
 
   if (params) {
     for (const [k, v] of Object.entries(params)) {
@@ -20,7 +20,7 @@ export async function insight<T>(
   }
 
   const res = await fetch(url.toString(), {
-    headers: { "x-client-id": cid },
+    headers: { "x-client-id": CLIENT_ID },
     // App Router server components can add caching around this if desired
     next: { revalidate: 0 },
   });
@@ -125,10 +125,8 @@ export async function getTokenTransfersById(
 ): Promise<{ data: Array<{
   from_address: string; to_address: string; block_timestamp: string; transaction_hash: string;
 }> }> {
-  const base = process.env.INSIGHT_BASE_URL || "https://insight.thirdweb.com";
-  const cid  = process.env.NEXT_PUBLIC_CLIENT_ID!;
-  const url  = new URL(`/v1/nfts/transfers/${contractAddress}/${tokenId}`, base);
-  url.searchParams.set("chain_id", "8453");
+  const url  = new URL(`/v1/nfts/transfers/${contractAddress}/${tokenId}`, INSIGHT_BASE);
+  url.searchParams.set("chain_id", String(BASE_CHAIN_ID));
   url.searchParams.set("limit", String(opts?.limit ?? 200));
   url.searchParams.set("metadata", "false");
   url.searchParams.set("include_owners", "true");
@@ -136,7 +134,7 @@ export async function getTokenTransfersById(
   url.searchParams.set("sales", "true");         // include sale meta when present
   url.searchParams.set("sort_order", "desc");    // newest first
 
-  const res = await fetch(url.toString(), { headers: { "x-client-id": cid } });
+  const res = await fetch(url.toString(), { headers: { "x-client-id": CLIENT_ID } });
   if (!res.ok) throw new Error(`Insight ${res.status}: ${res.statusText}`);
   return res.json() as Promise<{ data: Array<{
     from_address: string; to_address: string; block_timestamp: string; transaction_hash: string;
@@ -144,19 +142,17 @@ export async function getTokenTransfersById(
 }
 
 export async function getOwnedNftsByWallet(ownerAddress: string, limit = 1000) {
-  const base = process.env.INSIGHT_BASE_URL || "https://insight.thirdweb.com";
-  const cid  = process.env.NEXT_PUBLIC_CLIENT_ID!;
   const col  = process.env.NEXT_PUBLIC_NFT_COLLECTION_ADDRESS!;
-  const url  = new URL("/v1/nfts", base);
+  const url  = new URL("/v1/nfts", INSIGHT_BASE);
 
-  url.searchParams.append("chain_id", "8453");
+  url.searchParams.append("chain_id", String(BASE_CHAIN_ID));
   url.searchParams.append("limit", String(limit));
   url.searchParams.append("owner_address", ownerAddress);
   url.searchParams.append("contract_address", col);
   url.searchParams.append("include_owners", "false");
   url.searchParams.append("resolve_metadata_links", "true");
 
-  const res = await fetch(url.toString(), { headers: { "x-client-id": cid } });
+  const res = await fetch(url.toString(), { headers: { "x-client-id": CLIENT_ID } });
   if (!res.ok) throw new Error(`Insight ${res.status}: ${res.statusText}`);
   return res.json() as Promise<{ data: Array<{
     token_id: string;

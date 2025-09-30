@@ -1,4 +1,4 @@
-import { NFT_CONTRACTS, type NftContract } from "@/consts/nft_contracts";
+import { NFT_CONTRACTS, type NftContract } from "../../consts/nft_contracts";
 import {
   Accordion,
   AccordionButton,

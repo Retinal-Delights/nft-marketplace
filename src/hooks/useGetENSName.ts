@@ -1,4 +1,4 @@
-import { client } from "@/consts/client";
+import { client } from "../consts/client";
 import { queryOptions, useQuery } from "@tanstack/react-query";
 import { resolveName } from "thirdweb/extensions/ens";
 

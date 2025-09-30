@@ -1,4 +1,4 @@
-import { client } from "@/consts/client";
+import { client } from "../../consts/client";
 import { Box, Flex, Link, Text } from "@chakra-ui/react";
 import type { NFT, ThirdwebContract } from "thirdweb";
 import { MediaRenderer } from "thirdweb/react";

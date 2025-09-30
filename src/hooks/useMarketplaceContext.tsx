@@ -1,13 +1,13 @@
 "use client";
 
-import { client } from "@/consts/client";
-import { MARKETPLACE_CONTRACTS } from "@/consts/marketplace_contract";
-import { NFT_CONTRACTS } from "@/consts/nft_contracts";
-import { SUPPORTED_TOKENS, Token } from "@/consts/supported_tokens";
+import { client } from "../consts/client";
+import { MARKETPLACE_CONTRACTS } from "../consts/marketplace_contract";
+import { NFT_CONTRACTS } from "../consts/nft_contracts";
+import { SUPPORTED_TOKENS, Token } from "../consts/supported_tokens";
 import {
   getSupplyInfo,
   SupplyInfo,
-} from "@/extensions/getLargestCirculatingTokenId";
+} from "../extensions/getLargestCirculatingTokenId";
 import { Box, Spinner } from "@chakra-ui/react";
 import { createContext, type ReactNode, useContext } from "react";
 import { getContract, type ThirdwebContract } from "thirdweb";

@@ -1,10 +1,10 @@
 import { MediaRenderer, useReadContract } from "thirdweb/react";
 import { getNFT as getNFT721 } from "thirdweb/extensions/erc721";
 import { getNFT as getNFT1155 } from "thirdweb/extensions/erc1155";
-import { client } from "@/consts/client";
+import { client } from "../../consts/client";
 import { Box, Flex, Heading, Tab, TabList, Tabs, Text } from "@chakra-ui/react";
 import { useState } from "react";
-import { useMarketplaceContext } from "@/hooks/useMarketplaceContext";
+import { useMarketplaceContext } from "../../hooks/useMarketplaceContext";
 import { ListingGrid } from "./ListingGrid";
 import { AllNftsGrid } from "./AllNftsGrid";
 

@@ -1,8 +1,8 @@
 "use client";
 
-import { client } from "@/consts/client";
-import { useGetENSAvatar } from "@/hooks/useGetENSAvatar";
-import { useGetENSName } from "@/hooks/useGetENSName";
+import { client } from "../../consts/client";
+import { useGetENSAvatar } from "../../hooks/useGetENSAvatar";
+import { useGetENSName } from "../../hooks/useGetENSName";
 import { Link } from "@chakra-ui/next-js";
 import {
   Box,

@@ -1,4 +1,4 @@
-import { client } from "@/consts/client";
+import { client } from "../../consts/client";
 import {
   Accordion,
   AccordionButton,
@@ -29,11 +29,11 @@ import {
 import { shortenAddress } from "thirdweb/utils";
 import { NftAttributes } from "./NftAttributes";
 import { CreateListing } from "./CreateListing";
-import { useMarketplaceContext } from "@/hooks/useMarketplaceContext";
+import { useMarketplaceContext } from "../../hooks/useMarketplaceContext";
 import dynamic from "next/dynamic";
 import { NftDetails } from "./NftDetails";
 import RelatedListings from "./RelatedListings";
-import { getTokenTransfersById } from "@/app/utils/insight";
+import { getTokenTransfersById } from "../../app/utils/insight";
 import { useState, useEffect } from "react";
 
 const CancelListingButton = dynamic(() => import("./CancelListingButton"), {
