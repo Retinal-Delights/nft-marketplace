@@ -6,7 +6,8 @@ import {
   Box, Flex, HStack, Link as CLink, Text, Image, Spacer,
 } from "@chakra-ui/react";
 import { ConnectButton } from "thirdweb/react";
-import { client } from "../consts/client";
+import { client } from "../lib/thirdweb";
+import { base } from "thirdweb/chains";
 
 const LINKS = [
   { href: "/", label: "HOME" },
@@ -77,7 +78,7 @@ export default function NavBar() {
         <Spacer />
 
         {/* Right controls */}
-        <ConnectButton client={client} theme="dark" />
+        <ConnectButton client={client} chain={base} theme="dark" />
       </Flex>
     </Box>
   );

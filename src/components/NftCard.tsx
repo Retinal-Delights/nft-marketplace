@@ -1,6 +1,7 @@
 "use client";
 import { Box, Text, Image, HStack, VStack, Badge } from "@chakra-ui/react";
 import { ipfsToHttp } from "../utils/ipfs";
+import { AuctionActions } from "./AuctionActions";
 
 type Attr = { trait_type?: string; value?: string | number };
 function findAttr(attrs: Attr[], key: string) {
@@ -16,6 +17,9 @@ export default function NftCard({
   listingId,
   bidCount,
   endSec,
+  minBid,
+  buyoutPrice,
+  currency = "ETH",
 }: {
   tokenId: string;
   name: string;
@@ -24,6 +28,9 @@ export default function NftCard({
   listingId?: string;
   bidCount?: number;
   endSec: number | null;
+  minBid?: string;
+  buyoutPrice?: string;
+  currency?: string;
 }) {
   const rarity = String(findAttr(attributes, "rarity_tier") || findAttr(attributes, "tier") || "").toLowerCase();
   const rank = String(findAttr(attributes, "rank") || "");
@@ -74,6 +81,15 @@ export default function NftCard({
             <Text>Token #{tokenId}</Text>
             <Text>{listingId ? `Listing ${listingId}` : "Not listed"}</Text>
           </HStack>
+          
+          {/* Auction Actions */}
+          <AuctionActions
+            listingId={listingId}
+            endSec={endSec || 0}
+            minBid={minBid}
+            buyoutPrice={buyoutPrice}
+            currency={currency}
+          />
         </VStack>
       </Box>
     </Box>

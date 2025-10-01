@@ -142,6 +142,9 @@ export default function NftsPage() {
                 listingId={auction?.listingId}
                 bidCount={auction?.bidCount ?? 0}
                 endSec={auction?.endSec ?? null}
+                minBid="0.01"
+                buyoutPrice="0.1"
+                currency="ETH"
               />
             );
           })}
